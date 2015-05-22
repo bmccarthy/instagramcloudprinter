@@ -108,9 +108,9 @@
                                 addIfNew(row.new_val.tag);
                             }
 
-                        } else if (row.new_val.isOn && !row.old_val.isOn) {
+                        } else if (row.new_val != null && row.new_val.isOn && row.old_val != null && !row.old_val.isOn) {
                             addIfNew(row.new_val.tag);
-                        } else if (!row.new_val.isOn && row.old_val.isOn) {
+                        } else if (row.new_val != null && !row.new_val.isOn && row.old_val != null && row.old_val.isOn) {
                             removeIfUnused(row.old_val.tag);
                         }
                     });
@@ -128,7 +128,6 @@
                         // delete all existing subscriptions, and than subscribe to all the tags
                         request.del(url, function (err) {
                             if (err) {
-                                config.logger.error(err);
                                 throw err;
                             }
 
@@ -138,6 +137,9 @@
                                 }
                             });
                         });
+                    })
+                    .catch(function (err) {
+                        config.logger.error(err);
                     });
             });
         });

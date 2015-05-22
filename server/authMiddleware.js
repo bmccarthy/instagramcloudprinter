@@ -12,11 +12,7 @@
 
         jwt.verify(token, config.TOKEN_SECRET, function (err, decoded) {
             if (err) {
-                if(err.name === 'TokenExpiredError'){
-                    return res.status(401).send({message: 'Token has expired'});
-                } else{
-                    return res.status(401).send({message: 'Invalid token'});
-                }
+                return res.status(401).send(err);
             }
 
             req.user = decoded.sub;
