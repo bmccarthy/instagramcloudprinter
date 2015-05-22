@@ -1,0 +1,32 @@
+<div class="scrollable">
+    <div class="scrollable-content">
+        <div class="section">
+            <div class="form-group">
+                <select class="form-control" ng-model="settings.printerId" ng-change="settingsChanged()" ng-options="printer.id as printer.displayName for printer in printers"></select>
+            </div>
+
+            <div class="input-group">
+                <span class="input-group-addon">#</span>
+                <input class="form-control" type="text" ng-model="settings.tag" ng-change="settingsChanged()" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
+            </div>
+
+            <div class="form-group">
+                <label>Is Active?</label>
+                <ui-switch ng-model="settings.isOn" ng-change="settingsChanged()"></ui-switch>
+            </div>
+
+            <!--<div class="form-group">-->
+            <!--<button type="button" class="btn btn-primary btn-block" ng-click="reset()"><i class="fa fa-undo"></i> Reset</button>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+            <!--<button type="button" class="btn btn-primary btn-block" ng-click="logout()"><i class="fa fa-power-off"></i> Logout</button>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+            <!--<button type="button" class="btn btn-danger btn-block" ng-click="cancelAll()"><i class="fa fa-times-circle-o"></i> Cancel All</button>-->
+            <!--</div>-->
+
+        </div>
+    </div>
+</div>

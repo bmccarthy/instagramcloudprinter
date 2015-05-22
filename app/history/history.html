@@ -1,0 +1,18 @@
+<div class="scrollable">
+    <div class="scrollable-content">
+        <div class="list-group">
+            <a ng-repeat="item in items" ui-sref="app.history.detail({ id: item.id })" class="list-group-item">
+                <h4 class="list-group-item-heading">{{item.caption.text}}</h4>
+
+                <div>
+                    <p class="list-group-item-text">{{item.user.full_name}} ({{item.user.username}})</p>
+
+                    <img src="{{item.images.thumbnail.url}}" class="img-thumbnail">
+
+                    <i class="fa fa-chevron-right pull-right"></i>
+                </div>
+            </a>
+
+        </div>
+    </div>
+</div>

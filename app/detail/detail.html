@@ -1,0 +1,32 @@
+<div class="scrollable">
+    <div class="scrollable-content">
+        <div class="section">
+            <img src="{{item.images.standard_resolution.url}}"/>
+
+            <p>Created at: {{item.created_time}}</p>
+
+            <p>By: {{item.user.full_name}} ({{item.user.username}})</p>
+
+            <div class="form-group">
+                <button type="button" class="btn btn-primary btn-block" ng-click="printOriginal()">
+                    <i class="fa fa-print"></i> Print Original
+                </button>
+            </div>
+
+            <div class="form-group">
+                <button type="button" class="btn btn-primary btn-block" ng-click="print()">
+                    <i class="fa fa-print"></i> Print
+                </button>
+            </div>
+
+            <!--<div class="form-group">-->
+            <!--<button type="button" class="btn btn-danger btn-block" ng-click="cancelAll()">Cancel</button>-->
+            <!--</div>-->
+
+            <!--<div class="form-group">-->
+            <!--<button type="button" class="btn btn-danger btn-block" ng-click="doNotPrint()">Do not print</button>-->
+            <!--</div>-->
+
+        </div>
+    </div>
+</div>
