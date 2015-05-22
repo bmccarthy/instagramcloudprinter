@@ -188,10 +188,7 @@
                                     conn = c;
                                     return r.table('users')
                                         .get(userId)
-                                        .update({
-                                            id: userId,
-                                            tokens: tokens
-                                        })
+                                        .update({id: userId, tokens: tokens})
                                         .run(conn);
                                 })
                                 .finally(function () {
