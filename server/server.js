@@ -151,18 +151,11 @@
                 .filter({isOn: true})
                 .pluck('tag')
                 .distinct()
-                .run(conn, function (err, tags) {
-                    if (err) return q.reject(err);
-
-                    var retval = [];
-
-                    for (var i = 0; i < tags.length; i++) {
-                        if (tags[i].tag) {
-                            retval.push(tags[i]);
-                        }
-                    }
-
-                    deferred.resolve(retval);
+                .run(conn)
+                .then(function (cursor) {
+                    cursor.toArray(function (tags) {
+                        deferred.resolve(tags);
+                    })
                 });
         });
 

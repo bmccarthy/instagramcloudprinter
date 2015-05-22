@@ -1,9 +1,7 @@
 (function () {
     'use strict';
 
-    var moment = require('moment');
-    var jwt = require('jwt-simple');
-
+    var jwt = require('jsonwebtoken');
     var config = require('../config');
     var bodyParser = require('body-parser');
     var google = require('googleapis');
@@ -42,21 +40,24 @@
                     .then(function (c) {
                         conn = c;
 
-                        return r.table('users').insert(user, options).run(conn).then(function (result) {
-                            if (result.inserted !== 1 && result.replaced !== 1) {
-                                throw new Error('Document was not inserted/updated.');
-                            } else {
-                                return res.send({
-                                    token: createToken(result.changes[0].new_val),
-                                    user: result.changes[0].new_val,
-                                    state: req.body.state
-                                });
-                            }
-                        })
+                        return r.table('users')
+                            .insert(user, options)
+                            .run(conn)
+                            .then(function (result) {
+                                if (result.inserted !== 1 && result.replaced !== 1) {
+                                    return q.reject({message: 'Document was not inserted/updated'});
+                                } else {
+                                    return res.send({
+                                        token: createToken(result.changes[0].new_val),
+                                        user: result.changes[0].new_val,
+                                        state: req.body.state
+                                    });
+                                }
+                            })
                     })
                     .error(function (err) {
                         config.logger.error(err);
-                        return res.status(400).send({reason: 'Error saving new user', message: err});
+                        return res.status(500).send({reason: 'Error saving new user', message: err});
                     })
                     .finally(function () {
                         if (conn) conn.close();
@@ -104,11 +105,12 @@
                 return r.table('users')
                     .get(req.user)
                     .update(settings, {returnChanges: true})
-                    .run(conn, function (err, resp) {
-                        if (resp.changes.length === 0) {
+                    .run(conn)
+                    .then(function (result) {
+                        if (result.changes.length === 0) {
                             res.status(304).send({});
                         } else {
-                            res.send(resp.changes[0].new_val);
+                            res.send(result.changes[0].new_val);
                         }
                     });
             })
@@ -122,6 +124,7 @@
     });
 
     router.get('/printJobs', ensureAuthenticated, function (req, res) {
+        // TODO: add in parameter to only show print jobs for the current printer?
         var requestOptions = {
             url: 'https://www.google.com/cloudprint/jobs',
             formData: {
@@ -148,18 +151,17 @@
                         return r.table('pictures')
                             // filter all pictures by only ones which are in queue with google cloud print
                             .filter(r.row('prints')('id').setIntersection(jobIds).count().gt(0))
-                            .run(conn, function (err, cursor) {
+                            .run(conn)
+                            .then(function (cursor) {
 
-                                cursor.toArray()
+                                return cursor.toArray()
                                     .then(function (results) {
                                         res.send(results);
-                                    }).error(function (err) {
-                                        return res.status(500).send({reason: 'Error', message: err});
                                     });
                             });
                     })
                     .error(function (err) {
-                        return res.status(400).send({reason: 'Error', message: err});
+                        return res.status(500).send({reason: 'Error', message: err});
                     })
                     .finally(function () {
                         if (conn) conn.close();
@@ -172,9 +174,10 @@
     });
 
     router.get('/printJob', ensureAuthenticated, function (req, res) {
-        printer.getImage(req.query.id).then(function (image) {
-            res.send(image);
-        })
+        printer.getImage(req.query.id)
+            .then(function (image) {
+                res.send(image);
+            })
             .catch(function (err) {
                 config.logger.error(err);
                 return res.status(500).send({reason: 'Error', message: err});
@@ -186,7 +189,7 @@
 
         printer.submitPrintJob(req.user, req.body.id, req.body.original)
             .then(function () {
-                res.send({});
+                res.send({success: true});
             })
             .catch(function (err) {
                 config.logger.error(err);
@@ -195,12 +198,8 @@
     });
 
     function createToken(user) {
-        var payload = {
-            sub: user.id,
-            iat: moment().unix(),
-            exp: moment().add(14, 'days').unix()
-        };
-        return jwt.encode(payload, config.TOKEN_SECRET);
+        var token = jwt.sign({sub: user.id}, config.TOKEN_SECRET, {expiresInSeconds: 60 * 60 * 24 * 14});
+        return token;
     }
 
     module.exports = router;
