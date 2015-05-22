@@ -191,10 +191,8 @@
                                         .update({
                                             id: userId,
                                             tokens: tokens
-                                        }).run(conn, function (err, resp) {
-                                            //console.log('updated user with new tokens');
-                                            //console.log(resp);
-                                        });
+                                        })
+                                        .run(conn);
                                 })
                                 .finally(function () {
                                     if (conn) conn.close();

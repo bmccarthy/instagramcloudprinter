@@ -16,15 +16,12 @@
             });
 
             $rootScope.$on('$stateChangeSuccess', function () {
-                console.log('change finished');
                 $rootScope.loading = false;
             });
             $rootScope.$on('$stateNotFound', function () {
-                console.log('change error');
                 $rootScope.loading = false;
             });
             $rootScope.$on('$stateChangeError', function () {
-                console.log('change error');
                 $rootScope.loading = false;
             });
 
