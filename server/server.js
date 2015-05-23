@@ -155,8 +155,9 @@
                 .distinct()
                 .run(conn)
                 .then(function (cursor) {
-                    cursor.toArray(function (tags) {
-                        deferred.resolve(tags);
+                    cursor.toArray(function (err, tags) {
+                        if (err) deferred.reject(err);
+                        else deferred.resolve(tags);
                     })
                 });
         });
@@ -212,6 +213,11 @@
                 .delete({returnChanges: true})
                 .run(conn)
                 .then(function (result) {
+                    if (!result.changes) {
+                        deferred.resolve(result);
+                        return;
+                    }
+
                     for (var i = 0; i < result.changes.length; i++) {
                         request.del('https://api.instagram.com/v1/subscriptions?client_secret=' + config.instagram.secret + '&id=' + result.changes[i].old_val.data.id + '&client_id=' + config.instagram.client,
                             function (err, response, body) {
@@ -220,11 +226,11 @@
                                     return;
                                 }
 
-                                config.logger.info('un-subscribed from instagram tag: ' + JSON.parse(body));
+                                config.logger.info('un-subscribed from instagram tag: ' + JSON.stringify(body));
                             });
                     }
 
-                    deferred.resolve(result.changes);
+                    deferred.resolve(result);
                 });
         });
 
@@ -268,7 +274,7 @@
             var jsonBody = body;
 
             if (response.statusCode < 200 || response.statusCode >= 400) {
-                config.logger.error('Error subscribing to tag: ' + JSON.stringify(body));
+                config.logger.error('Error subscribing to tag: ' + JSON.stringify(body) + ', params:' + JSON.stringify(params));
                 deferred.reject();
                 return q.reject(jsonBody);
             }

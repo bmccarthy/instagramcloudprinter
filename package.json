@@ -19,6 +19,7 @@
     "googleapis": "^2.0.3",
     "jsonwebtoken": "^5.0.1",
     "lodash": "^2.4.1",
+    "mkdirp": "^0.5.1",
     "q": "^1.2.0",
     "request": "^2.51.0",
     "rethinkdb": "^2.0.0",

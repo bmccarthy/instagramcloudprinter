@@ -10,8 +10,8 @@
     var lastUpdate = 0;
 
     router.get('/photo', function (req, res) {
-        if (req.param('hub.verify_token') == config.instagram.verify) {
-            res.send(req.param('hub.challenge'));
+        if (req.query['hub.verify_token'] == config.instagram.verify) {
+            res.send(req.query['hub.challenge']);
         } else {
             config.logger.error('token verification incorrect');
             res.status(500).json({err: 'Verify token incorrect'});

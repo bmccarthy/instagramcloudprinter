@@ -6,8 +6,10 @@
     var OAuth2 = google.auth.OAuth2;
     var r = require('rethinkdb');
     var fs = require('fs');
+    var path = require('path');
     var q = require('q');
     var request = require('request').defaults({json: true});
+    var mkdirp = require('mkdirp');
 
     function getImage(id) {
         var deferred = q.defer();
@@ -64,16 +66,23 @@
     function saveImage(url, filepath) {
         var deferred = q.defer();
 
-        var ws = fs.createWriteStream(filepath);
-        ws.on('error', function (err) {
-            config.logger.error(err);
-            deferred.reject(err);
-        });
-        ws.on('finish', function () {
-            deferred.resolve();
-        });
+        mkdirp(path.dirname(filepath), function (err) {
+            if (err) {
+                config.logger.err(err);
+                return;
+            }
 
-        request(url).pipe(ws);
+            var ws = fs.createWriteStream(filepath);
+            ws.on('error', function (err) {
+                config.logger.error(err);
+                deferred.reject(err);
+            });
+            ws.on('finish', function () {
+                deferred.resolve();
+            });
+
+            request(url).pipe(ws);
+        });
 
         return deferred.promise;
     }
@@ -93,16 +102,9 @@
             .then(function (i) {
                 image = i;
 
-                var opath = config.printFolder + image.id + '.jpg';
-                var npath = config.printFolder + image.id + '_edited.jpg';
+                var filepath = config.printFolder + image.id + '.jpg';
 
-                var filepath = original ? opath : npath;
-                var filename = original ? image.id + '.jpg' : image.id + '_edited.jpg';
-
-                return saveImage(image.images.standard_resolution.url, opath)
-                    .then(function () {
-                        return saveImage(image.images.standard_resolution.url, npath);
-                    })
+                return saveImage(image.images.standard_resolution.url, filepath)
                     .then(function () {
                         var requestOptions = {
                             url: 'https://www.google.com/cloudprint/submit',
@@ -110,7 +112,7 @@
                                 printerid: user.printerId,
                                 ticket: '{ "version": "1.0", "print": {} }',
                                 contentType: 'image/jpeg',
-                                title: filename,
+                                title: path.basename(filepath),
                                 content: fs.createReadStream(filepath),
                                 tag: config.printTag
                             }
@@ -119,11 +121,10 @@
                         return gcp(userId, requestOptions);
                     })
                     .finally(function () {
-                        fs.unlink(opath, function (err) {
-                            config.logger.error(err);
-                        });
-                        fs.unlink(npath, function (err) {
-                            config.logger.error(err);
+                        fs.unlink(filepath, function (err) {
+                            if (err) {
+                                config.logger.error(err);
+                            }
                         });
                     });
             })
@@ -150,8 +151,8 @@
                         if (conn) conn.close();
                     });
             })
-            .error(function () {
-                config.logger.error('Error attempting to submit print job');
+            .catch(function (err) {
+                config.logger.error('Error attempting to submit print job: ' + JSON.stringify(err));
             });
     }
 
