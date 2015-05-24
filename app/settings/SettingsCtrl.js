@@ -11,9 +11,7 @@
         };
 
         $scope.settingsChanged = function () {
-            $http.post('/api/google/settings', $scope.settings).success(function (user) {
-                window.localStorage['user'] = JSON.stringify(user);
-            });
+            $http.post('/api/google/settings', $scope.settings);
         };
 
         $scope.printers = printers;

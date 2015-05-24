@@ -26,10 +26,10 @@
             });
 
             $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
-                var user = window.localStorage['user'];
+                var token = window.localStorage['token'];
                 var requireLogin = toState.data && toState.data.requireLogin;
 
-                if (user == null && requireLogin) {
+                if (token == null && requireLogin) {
                     event.preventDefault();
 
                     $http.get('/api/google/login?state=' + $location.url())
@@ -73,7 +73,6 @@
                     }
 
                     $http.post('/api/google/callback', $location.search()).then(function (resp) {
-                        window.localStorage['user'] = JSON.stringify(resp.data.user);
                         window.localStorage['token'] = resp.data.token;
 
                         if (resp.data.state) {
@@ -90,14 +89,20 @@
                 abstract: true,
                 template: '<div data-ui-view></div>',
                 resolve: {
-                    user: function () {
-                        var user = window.localStorage['user'];
-                        if (user == null) {
-                            return user;
-                        }
+                    user: ['$http', '$q', function ($http, $q) {
+                        var deferred = $q.defer();
 
-                        return JSON.parse(user);
-                    },
+                        $http.get('/api/google/me')
+                            .success(function (user) {
+                                deferred.resolve(user);
+                            })
+                            .error(function (err) {
+                                deferred.reject(err);
+                                return $q.reject(err);
+                            });
+
+                        return deferred.promise;
+                    }],
                     token: function () {
                         return window.localStorage['token'];
                     }
@@ -190,7 +195,7 @@
                 controller: [function () {
                     window.localStorage.clear();
                 }]
-            })
+            });
 
             // add trailing slashes to all routes before attempting to match against routes. https://github.com/angular-ui/ui-router/wiki/Frequently-Asked-Questions#how-to-make-a-trailing-slash-optional-for-all-routes
             $urlRouterProvider.rule(function ($injector, $location) {

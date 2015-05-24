@@ -94,7 +94,6 @@
 
     // from the settings/user screen
     router.post('/settings', ensureAuthenticated, function (req, res) {
-
         var settings = req.body;
         settings.id = req.user;
 
@@ -194,6 +193,31 @@
             .catch(function (err) {
                 config.logger.error(err);
                 res.status(500).send({message: err});
+            });
+    });
+
+    router.get('/me', ensureAuthenticated, function (req, res) {
+        var conn;
+        r.connect(config.database)
+            .then(function (c) {
+                conn = c;
+                return r.table('users')
+                    .get(req.user)
+                    .run(conn)
+                    .then(function (user) {
+                        if (user == null) {
+                            res.status(304).send({});
+                        } else {
+                            res.send(user);
+                        }
+                    });
+            })
+            .error(function (err) {
+                config.logger.error(err);
+                return res.status(500).send({reason: 'Error getting user', message: err});
+            })
+            .finally(function () {
+                if (conn) conn.close();
             });
     });
 
