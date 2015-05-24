@@ -184,6 +184,14 @@
                 }
             });
 
+            $stateProvider.state('logout', {
+                url: '/logout/',
+                template: '<p>You are now logged out</p>',
+                controller: [function () {
+                    window.localStorage.clear();
+                }]
+            })
+
             // add trailing slashes to all routes before attempting to match against routes. https://github.com/angular-ui/ui-router/wiki/Frequently-Asked-Questions#how-to-make-a-trailing-slash-optional-for-all-routes
             $urlRouterProvider.rule(function ($injector, $location) {
                 var path = $location.url();
