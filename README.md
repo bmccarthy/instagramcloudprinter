@@ -6,4 +6,8 @@ The idea came up because I am getting married shortly and thought it would be co
 
 For the project, I bought a SELPHY CP800 printer, a Raspberry Pi 2 B, and battery supplies for both since the wedding is outside and may not have power outlets available. Also, I bought a bluetooth adapter for the Pi so it could tether to my cell phone for internet access.
 
+rethinkdb - http://rethinkdb.com/- I used the catsofinstagram sample from rethinkdb as a starting point in integrating with the Instagram API to get a stream of new photos with subscribed to tags
+
+mobile angular ui - http://mobileangularui.com/ - I used Mobile Angular UI to create the mobile focused website.
+
 TODO: finish outline.
