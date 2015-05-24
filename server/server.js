@@ -204,6 +204,10 @@
     }
 
     function unsubscribeFromTag(tagName) {
+        if (tagName == null || tagName === '') {
+            return q.when({});
+        }
+
         var deferred = q.defer();
 
         db(function (conn) {
