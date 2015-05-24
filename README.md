@@ -1,3 +1,9 @@
 # instagram cloud printer
 
-test
+This is something I created to be able to print photos from instagram to any google cloud connected printer.
+
+The idea came up because I am getting married shortly and thought it would be cool to have guests Instagram tagged photos print automatically.  I also wanted to open source a useful project and thought this was a good chance.
+
+For the project, I bought a SELPHY CP800 printer, a Raspberry Pi 2 B, and battery supplies for both since the wedding is outside and may not have power outlets available. Also, I bought a bluetooth adapter for the Pi so it could tether to my cell phone for internet access.
+
+TODO: finish outline.
