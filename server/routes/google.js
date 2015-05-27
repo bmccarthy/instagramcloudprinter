@@ -33,7 +33,7 @@
                 }
 
                 if (profile.id !== '113616792686032179958') {
-                    return res.status(401).send({reason: 'BETA users only.'});
+                    return res.status(401).send({reason: 'BETA users only: ' + JSON.stringify(profile)});
                 }
 
                 var conn;
