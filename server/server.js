@@ -196,7 +196,7 @@
                         if (err) throw err;
 
                         if (user.isOn) {
-                            printer.submitPrintJob(user.id, image.id);
+                            printer.submitPrintJob(user, image.id);
                         }
                     });
                 });

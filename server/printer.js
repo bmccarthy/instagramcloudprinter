@@ -37,32 +37,6 @@
         return deferred.promise;
     }
 
-    function getUser(id) {
-        var deferred = q.defer();
-
-        var conn;
-        r.connect(config.database)
-            .then(function (c) {
-                conn = c;
-                return r.table('users').get(id).run(conn, function (err, user) {
-                    if (err) {
-                        deferred.reject(err);
-                    }
-
-                    if (user == null) {
-                        deferred.reject('No user found');
-                    }
-
-                    deferred.resolve(user);
-                });
-
-            }).finally(function () {
-                if (conn) conn.close();
-            });
-
-        return deferred.promise;
-    }
-
     function saveImage(url, filepath) {
         var deferred = q.defer();
 
@@ -87,17 +61,11 @@
         return deferred.promise;
     }
 
-    function submitPrintJob(userId, imageId, original) {
-        var user;
+    function submitPrintJob(user, imageId, original) {
         var image;
 
-        // get user
-        return getUser(userId)
-            // get image
-            .then(function (u) {
-                user = u;
-                return getImage(imageId);
-            })
+        // get image
+        return getImage(imageId)
             // make request to GCP to print the image
             .then(function (i) {
                 image = i;
@@ -118,7 +86,7 @@
                             }
                         };
 
-                        return gcp(userId, requestOptions);
+                        return gcp(user, requestOptions);
                     })
                     .finally(function () {
                         fs.unlink(filepath, function (err) {
@@ -156,7 +124,7 @@
             });
     }
 
-    function gcp(userId, requestOptions) {
+    function gcp(user, requestOptions) {
         var deferred = q.defer();
 
         if (!requestOptions.method) {
@@ -164,61 +132,56 @@
         }
 
         requestOptions.headers = requestOptions.headers || {};
+        requestOptions.headers.Authorization = 'OAuth ' + user.tokens.access_token;
 
-        getUser(userId)
-            .then(function (user) {
+        request(requestOptions, function (err, response, body) {
+            if (err) {
+                deferred.reject(err);
+                return;
+            }
 
-                requestOptions.headers.Authorization = 'OAuth ' + user.tokens.access_token;
+            if (response.statusCode === 401 || response.statusCode === 403) {
+                var oauth2Client = new OAuth2(config.google.client, config.google.secret, config.google.redirect);
+                oauth2Client.setCredentials(user.tokens);
 
-                request(requestOptions, function (err, response, body) {
-                    if (err) {
-                        deferred.reject(err);
-                        return;
-                    }
+                oauth2Client.refreshAccessToken(function (err, tokens) {
+                    if (err) throw Error(err);
 
-                    if (response.statusCode === 401 || response.statusCode === 403) {
-                        var oauth2Client = new OAuth2(config.google.client, config.google.secret, config.google.redirect);
-                        oauth2Client.setCredentials(user.tokens);
-
-                        oauth2Client.refreshAccessToken(function (err, tokens) {
-                            if (err) throw Error(err);
-
-                            var conn;
-                            r.connect(config.database)
-                                .then(function (c) {
-                                    conn = c;
-                                    return r.table('users')
-                                        .get(userId)
-                                        .update({id: userId, tokens: tokens})
-                                        .run(conn);
-                                })
-                                .finally(function () {
-                                    if (conn) conn.close();
-                                });
-
-                            requestOptions.headers.Authorization = 'OAuth ' + tokens.access_token;
-
-                            request(requestOptions, function (err, response, body) {
-                                if (err) {
-                                    deferred.reject(err);
-                                    return;
-                                }
-
-                                if (response.statusCode >= 200 && response.statusCode < 400) {
-                                    deferred.resolve(body);
-                                } else {
-                                    deferred.reject(response);
-                                }
-                            });
+                    var conn;
+                    r.connect(config.database)
+                        .then(function (c) {
+                            conn = c;
+                            return r.table('users')
+                                .get(user.id)
+                                .update({id: user.id, tokens: tokens})
+                                .run(conn);
+                        })
+                        .finally(function () {
+                            if (conn) conn.close();
                         });
 
-                    } else if (response.statusCode >= 200 && response.statusCode < 400) {
-                        deferred.resolve(body);
-                    } else {
-                        deferred.reject(response);
-                    }
+                    requestOptions.headers.Authorization = 'OAuth ' + tokens.access_token;
+
+                    request(requestOptions, function (err, response, body) {
+                        if (err) {
+                            deferred.reject(err);
+                            return;
+                        }
+
+                        if (response.statusCode >= 200 && response.statusCode < 400) {
+                            deferred.resolve(body);
+                        } else {
+                            deferred.reject(response);
+                        }
+                    });
                 });
-            });
+
+            } else if (response.statusCode >= 200 && response.statusCode < 400) {
+                deferred.resolve(body);
+            } else {
+                deferred.reject(response);
+            }
+        });
 
         return deferred.promise;
     }

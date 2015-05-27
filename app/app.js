@@ -50,6 +50,12 @@
 
             $urlMatcherFactoryProvider.strictMode(false);
 
+            $stateProvider.state('loggedout', {
+                template: '<p>You have been logged out.</p>',
+                controller: ['$scope', '$state', function ($scope, $state) {
+                }]
+            });
+
             $stateProvider.state('info', {
                 url: '/info/',
                 template: '<p>You are not logged in yet...</p>',
@@ -88,25 +94,6 @@
                 url: '/',
                 abstract: true,
                 template: '<div data-ui-view></div>',
-                resolve: {
-                    user: ['$http', '$q', function ($http, $q) {
-                        var deferred = $q.defer();
-
-                        $http.get('/api/google/me')
-                            .success(function (user) {
-                                deferred.resolve(user);
-                            })
-                            .error(function (err) {
-                                deferred.reject(err);
-                                return $q.reject(err);
-                            });
-
-                        return deferred.promise;
-                    }],
-                    token: function () {
-                        return window.localStorage['token'];
-                    }
-                },
                 data: {
                     requireLogin: true
                 }
@@ -177,6 +164,20 @@
                 templateUrl: 'settings/settings.html',
                 controller: 'SettingsCtrl',
                 resolve: {
+                    user: ['$http', '$q', function ($http, $q) {
+                        var deferred = $q.defer();
+
+                        $http.get('/api/google/me')
+                            .success(function (user) {
+                                deferred.resolve(user);
+                            })
+                            .error(function (err) {
+                                deferred.reject(err);
+                                return $q.reject(err);
+                            });
+
+                        return deferred.promise;
+                    }],
                     printers: ['$http', '$q', function ($http, $q) {
                         var deferred = $q.defer();
 
@@ -220,7 +221,7 @@
 
     angular.module('app').constant('moment', moment);
 
-    angular.module('app').factory('sessionInjector', [function () {
+    angular.module('app').factory('sessionInjector', ['$q', '$timeout', '$injector', function ($q, $timeout, $injector) {
         return {
             request: function (config) {
                 var token = window.localStorage['token'];
@@ -230,6 +231,19 @@
                 }
 
                 return config;
+            },
+            responseError: function (rejection) {
+                if (rejection.status === 401) {
+
+                    window.localStorage.clear();
+
+                    $timeout(function () {
+                        var $state = $injector.get('$state');
+                        $state.go('loggedout');
+                    });
+
+                }
+                return $q.reject(rejection);
             }
         };
     }]);

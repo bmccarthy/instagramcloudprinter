@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    angular.module('app').controller('DetailCtrl', ['$scope', 'user', '$stateParams', '$http', function ($scope, user, $stateParams, $http) {
+    angular.module('app').controller('DetailCtrl', ['$scope', '$stateParams', '$http', function ($scope, $stateParams, $http) {
         $http.get('/api/google/printJob?id=' + $stateParams.id).success(function (item) {
             $scope.item = item;
         });

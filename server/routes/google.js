@@ -32,6 +32,10 @@
                     return res.status(400).send({reason: 'Error getting google profile', message: err});
                 }
 
+                if (profile.id !== '113616792686032179958') {
+                    return res.status(401).send({reason: 'BETA users only.'});
+                }
+
                 var conn;
                 var user = {id: profile.id, tokens: tokens};
                 var options = {returnChanges: true, conflict: 'update'};
@@ -95,14 +99,14 @@
     // from the settings/user screen
     router.post('/settings', ensureAuthenticated, function (req, res) {
         var settings = req.body;
-        settings.id = req.user;
+        settings.id = req.user.id;
 
         var conn;
         r.connect(config.database)
             .then(function (c) {
                 conn = c;
                 return r.table('users')
-                    .get(req.user)
+                    .get(req.user.id)
                     .update(settings, {returnChanges: true})
                     .run(conn)
                     .then(function (result) {
@@ -197,28 +201,7 @@
     });
 
     router.get('/me', ensureAuthenticated, function (req, res) {
-        var conn;
-        r.connect(config.database)
-            .then(function (c) {
-                conn = c;
-                return r.table('users')
-                    .get(req.user)
-                    .run(conn)
-                    .then(function (user) {
-                        if (user == null) {
-                            res.status(304).send({});
-                        } else {
-                            res.send(user);
-                        }
-                    });
-            })
-            .error(function (err) {
-                config.logger.error(err);
-                return res.status(500).send({reason: 'Error getting user', message: err});
-            })
-            .finally(function () {
-                if (conn) conn.close();
-            });
+        res.send(req.user);
     });
 
     function createToken(user) {
