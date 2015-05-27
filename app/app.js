@@ -51,7 +51,7 @@
             $urlMatcherFactoryProvider.strictMode(false);
 
             $stateProvider.state('loggedout', {
-                template: '<p>You have been logged out.</p>',
+                template: '<p>You have been logged out. <b>Please note: this website is still in development and only able to be accessed by the developers.</b></p>',
                 controller: ['$scope', '$state', function ($scope, $state) {
                 }]
             });
