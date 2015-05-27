@@ -32,7 +32,7 @@
                     return res.status(400).send({reason: 'Error getting google profile', message: err});
                 }
 
-                if (profile.id !== '113616792686032179958') {
+                if (profile.id !== '113616792686032179958' && profile.id !== '111362183559100313008') {
                     return res.status(401).send({reason: 'BETA users only: ' + JSON.stringify(profile)});
                 }
 
