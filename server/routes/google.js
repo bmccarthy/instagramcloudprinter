@@ -160,6 +160,7 @@
                         return r.table('pictures')
                             // filter all pictures by only ones which are in queue with google cloud print
                             .filter(r.row('prints')('id').setIntersection(jobIds).count().gt(0))
+                            .orderBy(r.desc('created_time'))
                             .run(conn)
                             .then(function (cursor) {
 
