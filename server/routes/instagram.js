@@ -50,6 +50,7 @@
                 return r.table('pictures')
                     .insert(r.http(path)('data').merge(function (item) {
                         return {
+                            created_time: r.epochTime(r.row('created_time').coerceTo('number')),
                             time: r.now(),
                             place: r.point(
                                 item('location')('longitude'),

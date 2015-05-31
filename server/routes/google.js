@@ -127,14 +127,23 @@
     });
 
     router.get('/printJobs', ensureAuthenticated, function (req, res) {
+
+        if (!req.user.printerId) {
+            res.status(400).send({message: 'No printer is set up for this user.'});
+        }
+
         // TODO: add in parameter to only show print jobs for the current printer?
         var requestOptions = {
             url: 'https://www.google.com/cloudprint/jobs',
             formData: {
-                q: config.printTag
+                q: config.printTag,
+                printerid: req.user.printerId,
+                sortOrder: 'CREATE_TIME_DESC',
+                limit: req.query.limit || 10,
+                offset: req.query.offset || 0,
+                status: req.query.showQueued === 'true' ? 'QUEUED' : 'DONE'
             }
         };
-        var showQueued = req.query.showQueued === 'true';
 
         printer.gcp(req.user, requestOptions)
             .then(function (result) {
@@ -142,9 +151,7 @@
                 var jobIds = [];
 
                 for (var i = 0; i < result.jobs.length; i++) {
-                    if (!showQueued || result.jobs[i].status === 'QUEUED' || result.jobs[i].status === 'IN_PROGRESS' || result.jobs[i].status === 'HELD') {
-                        jobIds.push(result.jobs[i].id);
-                    }
+                    jobIds.push(result.jobs[i].id);
                 }
 
                 var conn;
