@@ -1,5 +1,6 @@
 <div class="scrollable">
     <div class="scrollable-content">
+        <button class="btn btn-primary" ng-click="refresh()">Refresh</button>
         <div class="list-group">
             <a ng-repeat="item in items" ui-sref="app.queue.detail({ id: item.id })" class="list-group-item">
                 <h4 class="list-group-item-heading">{{item.caption.text}}</h4>
@@ -13,5 +14,6 @@
                 </div>
             </a>
         </div>
+        <button class="btn btn-primary" ng-click="loadMore()">Load More</button>
     </div>
 </div>
