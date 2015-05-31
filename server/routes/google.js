@@ -132,7 +132,6 @@
             res.status(400).send({message: 'No printer is set up for this user.'});
         }
 
-        // TODO: add in parameter to only show print jobs for the current printer?
         var requestOptions = {
             url: 'https://www.google.com/cloudprint/jobs',
             formData: {
@@ -140,8 +139,8 @@
                 printerid: req.user.printerId,
                 sortOrder: 'CREATE_TIME_DESC',
                 limit: req.query.limit || 10,
-                offset: req.query.offset || 0,
-                status: req.query.showQueued === 'true' ? 'QUEUED' : 'DONE'
+                offset: req.query.offset || 0
+                //,status: 'DONE' //todo: currently passing status fails.
             }
         };
 
