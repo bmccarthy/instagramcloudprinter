@@ -32,117 +32,68 @@
     app.get('*', function (req, res) {
         res.sendFile(path.join(__dirname, '../app/index.html'));
     });
-
-    // connect to and set up rethinkdb - all instagram pictures
+    
     var conn;
+    
     r.connect(config.database)
-        // create db
-        .then(function (c) {
+        .then(function(c){
             conn = c;
-            return r.dbCreate(config.database.db).run(conn);
         })
-        // create the wedding pictures table
-        .then(function () {
-            return r.tableCreate('pictures').run(conn);
-        })
-        // create the pictures table indexes
-        .then(function () {
-            return q.all([
-                r.table('pictures').indexCreate('time').run(conn),
-                r.table('pictures').indexCreate('place', {geo: true}).run(conn)
-            ]);
-        })
-        // create the users table
-        .then(function () {
-            return r.tableCreate('users').run(conn);
-        })
-        // create the users table
-        .then(function () {
-            return r.tableCreate('instagram_subscription').run(conn);
-        })
-        // if the table alrady exists, ignore that error
-        .error(function (err) {
+        .then(setupDb)
+        .then(startListening)
+        .then(subscribeToStaticTag);
+    
+    function createDb() {
+        return r.dbCreate(config.database.db).run(conn);
+    }
+    
+    function createUsers() {
+        return r.tableCreate('users').run(conn);
+    }
+    
+    function createInstagramSubscription() {
+        return r.tableCreate('instagram_subscription').run(conn);
+    }
+    
+    function createPictures() {
+        return r.tableCreate('pictures').run(conn)
+        .then(function(){
+             return q.all([
+                    r.table('pictures').indexCreate('time').run(conn),
+                    r.table('pictures').indexCreate('place', {geo: true}).run(conn)
+                ]);
+        });
+    }
+    
+    function setupDb() {
+        return createDb()
+        .then(createPictures)
+        .then(createUsers)
+        .then(createInstagramSubscription)
+        .error(function(err){
             if (err.msg.indexOf('already exists') == -1) {
-                config.logger.error(err);
                 throw err;
             }
-        })
-        // listen for new pictures
-        .then(function () {
-            return r.table('pictures')
-                .changes()
-                .run(conn, function (err, cursor) {
-                    if (err) throw err;
-
-                    cursor.each(function (err, row) {
-                        if (err) throw err;
-
-                        // only want to auto print images when they are newly inserted into the db, not when they are updated (they are updated during printing)
-                        if (row.old_val == null) {
-                            handleNewInstagram(row.new_val);
-                        }
-                    });
-                });
-        })
-        // listen for changes to tags
-        .then(function () {
-            return r.table('users')
-                .changes()
-                .run(conn, function (err, cursor) {
-                    if (err) throw err;
-
-                    cursor.each(function (err, row) {
-                        if (err) throw err;
-
-                        if (row.new_val == null && row.old_val != null) {
-                            // if user was deleted, call remove_if_unused(row.old_val.tag)
-                            removeIfUnused(row.old_val.tag);
-                        } else if (row.old_val == null && row.new_val != null && row.new_val.isOn) {
-                            // if user is new, call add_if_new(row.new_val.tag)
-                            addIfNew(row.new_val.tag);
-                        } else if (row.new_val != null && row.old_val != null && row.new_val.tag != row.old_val.tag) {
-                            // if old tag != new tag, call remove_if_unused(row.old_val.tag), add_if_new(row.new_val.tag)
-                            removeIfUnused(row.old_val.tag);
-
-                            if (row.new_val.isOn) {
-                                addIfNew(row.new_val.tag);
-                            }
-
-                        } else if (row.new_val != null && row.new_val.isOn && row.old_val != null && !row.old_val.isOn) {
-                            addIfNew(row.new_val.tag);
-                        } else if (row.new_val != null && !row.new_val.isOn && row.old_val != null && row.old_val.isOn) {
-                            removeIfUnused(row.old_val.tag);
-                        }
-                    });
-                });
-        })
-        // always subscribe to the instagram realtime api after setting up the database.
-        .finally(function () {
-            var url = 'https://api.instagram.com/v1/subscriptions?client_secret=' + config.instagram.secret + '&object=all&client_id=' + config.instagram.client;
-
-            db(function (conn) {
-                return r.table('instagram_subscription')
-                    .delete()
-                    .run(conn)
-                    .then(function () {
-                        // delete all existing subscriptions, and than subscribe to all the tags
-                        request.del(url, function (err) {
-                            if (err) {
-                                throw err;
-                            }
-
-                            getTags().then(function (tags) {
-                                for (var i = 0; i < tags.length; i++) {
-                                    subscribeToTag(tags[i].tag);
-                                }
-                            });
-                        });
-                    })
-                    .catch(function (err) {
-                        config.logger.error(err);
-                    });
-            });
         });
+    }
+    
+    function startListening () {
+        return r.table('pictures')
+                .changes()
+                .filter(r.row('old_val').eq(null))
+                .run(conn, function (err, cursor) {
+                    if (err) throw err;
+
+                    cursor.each(function (err, row) {
+                        if (err) throw err;
+                        handleNewInstagram(row.new_val);
+                    });
+                });
+    }
+    
+    function subscribeToStaticTag () {
+        return subscribeToTag(config.tag);
+    }
 
     function getTags() {
         var deferred = q.defer();
