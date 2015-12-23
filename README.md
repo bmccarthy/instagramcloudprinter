@@ -10,5 +10,5 @@ rethinkdb - http://rethinkdb.com/- I used the catsofinstagram sample from rethin
 
 mobile angular ui - http://mobileangularui.com/ - I used Mobile Angular UI to create the mobile focused website.
 
-TODO: finish outline.
+TODO: finish outline......
 
