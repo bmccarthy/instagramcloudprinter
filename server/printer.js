@@ -32,7 +32,10 @@
 
         return saveImage(url, filepath)
             .then(function () {
-                config.logger.info('pre-submitting print request to google.');
+                var title = path.basename(filepath);
+                var readStream = fs.createReadStream(filepath);
+
+                config.logger.info('pre-submitting print request to google. title: ' + title);
 
                 var requestOptions = {
                     url: 'https://www.google.com/cloudprint/submit',
@@ -40,13 +43,17 @@
                         printerid: config.printerId,
                         ticket: '{ "version": "1.0", "print": {} }',
                         contentType: 'image/jpeg',
-                        title: path.basename(filepath),
-                        content: fs.createReadStream(filepath),
+                        title: title,
+                        content: readStream,
                         tag: config.printTag
                     }
                 };
 
                 return gcp(requestOptions);
+            })
+            .catch(function (err) {
+                config.logger.error(err);
+                return q.reject(err);
             })
             .then(function () {
                 config.logger.info('printed file: ' + url);
