@@ -103,6 +103,7 @@
                         }
 
                         if (response.statusCode >= 200 && response.statusCode < 400) {
+                            config.logger.info('google print job returned success');
                             deferred.resolve(body);
                         } else {
                             config.logger.error(response);
@@ -112,6 +113,7 @@
                 });
 
             } else if (response.statusCode >= 200 && response.statusCode < 400) {
+                config.logger.info('google print job returned success');
                 deferred.resolve(body);
             } else {
                 config.logger.error(response);

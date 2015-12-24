@@ -51,7 +51,7 @@
                     }
 
                     // errors are those which already exist. they are not inserted again. todo: possibly use the last time stamp to not get those from the recent query
-                    //config.logger.info('Inserted records: ' + result.inserted + ', errors: ' + result.errors);
+                    // config.logger.info('Inserted records: ' + result.inserted + ', errors: ' + result.errors);
                 });
             })
             .error(function (err) {
