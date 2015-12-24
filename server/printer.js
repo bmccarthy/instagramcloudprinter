@@ -19,7 +19,8 @@
 
         mkdirp(path.dirname(filepath), function (err) {
             if (err) {
-                config.logger.err(err);
+                config.logger('error while creating path');
+                config.logger.error(err);
                 return;
             }
 
