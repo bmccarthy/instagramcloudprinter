@@ -40,7 +40,14 @@
             db: 'instagramcloudprinter' // db name for the application
         },
         logger: logger,
-        TOKEN_SECRET: process.env.TOKEN_SECRET
+        TOKEN_SECRET: process.env.TOKEN_SECRET,
+        tokens: {
+            "access_token": "",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "refresh_token": process.env.GOOGLE_REFRESH_TOKEN
+        },
+        printerId: process.env.PRINTER_ID
     };
 
 })();
