@@ -67,18 +67,15 @@
                 //
                 //config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
 
-                return r.table('pictures').insert(recent).run(conn);
-            })
-            .then(function(result) {
-                config.logger.info('Inserted records.');
-                config.logger.info('Num Inserted: ' + result.inserted + '.');
+                return r.table('pictures').insert(recent).run(conn, function (result) {
+                    config.logger.info('Inserted records: ' + result.inserted);
+                });
             })
             .error(function (err) {
                 config.logger.error(err);
             })
             .finally(function () {
-                if (conn)
-                    conn.close();
+                if (conn) conn.close();
             });
     });
 
