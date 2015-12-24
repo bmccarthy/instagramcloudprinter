@@ -76,7 +76,7 @@
                     }
 
                     config.logger.info('Sucess inserting..');
-                    config.logger.info('Inserted records: ' + result.inserted);
+                    config.logger.info('Inserted records: ' + JSON.stringify(result));
                 });
             })
             .then(function () {
