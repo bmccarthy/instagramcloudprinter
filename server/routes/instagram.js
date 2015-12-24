@@ -53,7 +53,7 @@
                 conn = c;
 
                 var recent = r.http(path)('data');
-                //config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
+                config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
                 //
                 //var merged = recent.merge(function (item) {
                 //    return {
@@ -68,7 +68,8 @@
                 //config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
 
                 return r.table('pictures').insert(recent).run(conn, function (err, result) {
-                    if (err){
+                    if (err) {
+                        config.logger.error('Error while inserting pictures.');
                         config.logger.error(err);
                         throw err;
                     }
