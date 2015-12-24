@@ -66,25 +66,35 @@
         requestOptions.headers.Authorization = 'OAuth ' + config.tokens.access_token;
 
         request(requestOptions, function (err, response, body) {
-            if (err) throw Error(err);
+            if (err) {
+                config.logger.error(err);
+                throw err;
+            }
 
             if (response.statusCode === 401 || response.statusCode === 403) {
                 var oauth2Client = new OAuth2(config.google.client, config.google.secret, config.google.redirect);
                 oauth2Client.setCredentials(config.tokens);
 
                 oauth2Client.refreshAccessToken(function (err, tokens) {
-                    if (err) throw Error(err);
+                    if (err) {
+                        config.logger.error(err);
+                        throw err;
+                    }
 
                     config.tokens = tokens;
 
                     requestOptions.headers.Authorization = 'OAuth ' + tokens.access_token;
 
                     request(requestOptions, function (err, response, body) {
-                        if (err) throw Error(err);
+                        if (err) {
+                            config.logger.error(err);
+                            throw err;
+                        }
 
                         if (response.statusCode >= 200 && response.statusCode < 400) {
                             deferred.resolve(body);
                         } else {
+                            config.logger.error(response);
                             deferred.reject(response);
                         }
                     });
@@ -93,6 +103,7 @@
             } else if (response.statusCode >= 200 && response.statusCode < 400) {
                 deferred.resolve(body);
             } else {
+                config.logger.error(response);
                 deferred.reject(response);
             }
         });
