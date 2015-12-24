@@ -52,20 +52,22 @@
             .then(function (c) {
                 conn = c;
 
-                config.logger.info('Connected to db to insert instagram pictures');
+                var recent = r.http(path)('data');
+                config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
 
-                config.logger.info('Recent instagram pictures: ' + http(path)('data'));
+                var merged = recent.merge(function (item) {
+                    return {
+                        created_time: r.epochTime(item('created_time').coerceTo('number')),
+                        time: r.now(),
+                        place: r.point(
+                            item('location')('longitude'),
+                            item('location')('latitude')).default(null)
+                    }
+                });
 
-                return r.table('pictures')
-                    .insert(r.http(path)('data').merge(function (item) {
-                        return {
-                            created_time: r.epochTime(item('created_time').coerceTo('number')),
-                            time: r.now(),
-                            place: r.point(
-                                item('location')('longitude'),
-                                item('location')('latitude')).default(null)
-                        }
-                    })).run(conn)
+                config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
+
+                return r.table('pictures').insert(merged).run(conn);
             })
             .then(function(result) {
                 config.logger.info('Inserted new pictures into db. Inserted: ' + result.inserted + '.');
