@@ -132,7 +132,7 @@
                 deferred.reject();
                 return q.reject(body);
             } else {
-                config.logger.info('Subscribed to tag: ' + tagName);
+                config.logger.info('Subscribed to tag. params: ' + JSON.stringify(params));
                 deferred.resolve();
             }
         });
