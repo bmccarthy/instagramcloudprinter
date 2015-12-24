@@ -35,8 +35,6 @@
                 var title = path.basename(filepath);
                 var readStream = fs.createReadStream(filepath);
 
-                config.logger.info('pre-submitting print request to google. title: ' + title);
-
                 var requestOptions = {
                     url: 'https://www.google.com/cloudprint/submit',
                     formData: {
@@ -51,22 +49,12 @@
 
                 return gcp(requestOptions);
             })
-            .catch(function (err) {
-                config.logger.error(err);
-                return q.reject(err);
-            })
-            .then(function () {
-                config.logger.info('printed file: ' + url);
-                return q.when({});
-            })
             .finally(function () {
                 fs.unlink(filepath);
             });
     }
 
     function gcp(requestOptions) {
-        config.logger.info('attempting to print file');
-
         var deferred = q.defer();
 
         if (!requestOptions.method) {
@@ -77,12 +65,16 @@
         requestOptions.headers.Authorization = 'OAuth ' + config.tokens.access_token;
 
         request(requestOptions, function (err, response, body) {
+            config.logger.info('first attempt to print file sent. ' + requestOptions.headers.Authorization);
+
             if (err) {
                 config.logger.error(err);
                 throw err;
             }
 
             if (response.statusCode === 401 || response.statusCode === 403) {
+                config.logger.error('first attempt to print file failed.');
+
                 var oauth2Client = new OAuth2(config.google.client, config.google.secret, config.google.redirect);
                 oauth2Client.setCredentials(config.tokens);
 
@@ -97,6 +89,8 @@
                     requestOptions.headers.Authorization = 'OAuth ' + tokens.access_token;
 
                     request(requestOptions, function (err, response, body) {
+                        config.logger.info('second attempt to print file sent. ' + requestOptions.headers.Authorization);
+
                         if (err) {
                             config.logger.error(err);
                             throw err;
@@ -106,7 +100,7 @@
                             config.logger.info('google print job returned success');
                             deferred.resolve(body);
                         } else {
-                            config.logger.error(response);
+                            config.logger.error('second attempt to print file failed.');
                             deferred.reject(response);
                         }
                     });
