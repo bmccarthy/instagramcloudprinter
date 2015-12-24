@@ -52,9 +52,9 @@
             .then(function (c) {
                 conn = c;
 
-                var recent = r.http(path)('data');
-                config.logger.info('data: ' + recent);
-                config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
+                //var recent = r.http(path)('data');
+                //config.logger.info('data: ' + recent);
+                //config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
                 //
                 //var merged = recent.merge(function (item) {
                 //    return {
@@ -68,7 +68,7 @@
                 //
                 //config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
 
-                return r.table('pictures').insert(recent).run(conn, function (err, result) {
+                return r.table('pictures').insert(r.http(path)('data')).run(conn, function (err, result) {
                     if (err) {
                         config.logger.error('Error while inserting pictures.');
                         config.logger.error(err);
