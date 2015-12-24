@@ -52,6 +52,8 @@
             .then(function (c) {
                 conn = c;
 
+                config.logger.info('Connected to db to insert instagram pictures');
+
                 config.logger.info('Recent instagram pictures: ' + JSON.stringify(http(path)));
 
                 return r.table('pictures')
