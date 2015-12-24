@@ -51,6 +51,9 @@
         r.connect(config.database)
             .then(function (c) {
                 conn = c;
+
+                config.logger.info('Recent instagram pictures: ' + JSON.stringify(http(path)));
+
                 return r.table('pictures')
                     .insert(r.http(path)('data').merge(function (item) {
                         return {
