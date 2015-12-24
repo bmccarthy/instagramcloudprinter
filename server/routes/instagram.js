@@ -62,6 +62,9 @@
                         }
                     })).run(conn)
             })
+            .then(function(result) {
+                config.logger.info('Inserted new pictures into db. Inserted: ' + result.inserted + '.');
+            })
             .error(function (err) {
                 config.logger.error(err);
             })
