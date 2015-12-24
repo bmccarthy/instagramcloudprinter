@@ -53,24 +53,25 @@
                 conn = c;
 
                 var recent = r.http(path)('data');
-                config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
+                //config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
+                //
+                //var merged = recent.merge(function (item) {
+                //    return {
+                //        created_time: r.epochTime(item('created_time').coerceTo('number')),
+                //        time: r.now(),
+                //        place: r.point(
+                //            item('location')('longitude'),
+                //            item('location')('latitude')).default(null)
+                //    }
+                //});
+                //
+                //config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
 
-                var merged = recent.merge(function (item) {
-                    return {
-                        created_time: r.epochTime(item('created_time').coerceTo('number')),
-                        time: r.now(),
-                        place: r.point(
-                            item('location')('longitude'),
-                            item('location')('latitude')).default(null)
-                    }
-                });
-
-                config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
-
-                return r.table('pictures').insert(merged).run(conn);
+                return r.table('pictures').insert(recent).run(conn);
             })
             .then(function(result) {
-                config.logger.info('Inserted new pictures into db. Inserted: ' + result.inserted + '.');
+                config.logger.info('Inserted records.');
+                config.logger.info('Num Inserted: ' + result.inserted + '.');
             })
             .error(function (err) {
                 config.logger.error(err);
