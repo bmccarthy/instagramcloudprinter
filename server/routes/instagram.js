@@ -7,8 +7,6 @@
     var config = require('../config');
     var router = require('express').Router();
 
-    var lastUpdate = 0;
-
     router.get('/photo', function (req, res) {
         if (req.query['hub.verify_token'] == config.instagram.verify) {
             res.send(req.query['hub.challenge']);
@@ -38,34 +36,10 @@
         var update = req.body[0];
         res.json({success: true, kind: update.object});
 
-        config.logger.info('instagram is updated');
-        config.logger.info(req.body);
-
-        if (update.time - lastUpdate < 1) return;
-        lastUpdate = update.time;
-
-//        config.logger.info('POST request for /photo. object updated: ' + update.object_id);
-
         var conn;
         r.connect(config.database)
             .then(function (c) {
                 conn = c;
-
-                //var recent = r.http(path)('data');
-                //config.logger.info('data: ' + recent);
-                //config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
-                //
-                //var merged = recent.merge(function (item) {
-                //    return {
-                //        created_time: r.epochTime(item('created_time').coerceTo('number')),
-                //        time: r.now(),
-                //        place: r.point(
-                //            item('location')('longitude'),
-                //            item('location')('latitude')).default(null)
-                //    }
-                //});
-                //
-                //config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
 
                 var path = 'https://api.instagram.com/v1/tags/' + update.object_id + '/media/recent?client_id=' + config.instagram.client;
 
@@ -75,6 +49,7 @@
                         config.logger.error(err);
                         throw err;
                     }
+
                     // errors are those which already exist. they are not inserted again. todo: possibly use the last time stamp to not get those from the recent query
                     config.logger.info('Inserted records: ' + result.inserted + ', errors: ' + result.errors);
                 });

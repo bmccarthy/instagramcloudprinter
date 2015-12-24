@@ -22,7 +22,6 @@
             deferred.resolve();
         });
 
-        //config.logger.info('Requesting url to write file: ' + url);
         request(url).pipe(ws);
 
         return deferred.promise;
@@ -47,8 +46,9 @@
 
                 return gcp(requestOptions);
             })
-            .then(function(){
+            .then(function () {
                 config.logger.info('printed file: ' + url);
+                return q.when({});
             })
             .finally(function () {
                 fs.unlink(filepath);
