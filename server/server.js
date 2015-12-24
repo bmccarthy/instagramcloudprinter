@@ -95,6 +95,8 @@
         request.del(url, function (err) {
             if (err) return q.reject(err);
 
+            config.logger.info('Successfully unsubscribed to all instagram tags.');
+
             deferred.resolve({});
         });
 
@@ -130,6 +132,7 @@
                 deferred.reject();
                 return q.reject(body);
             } else {
+                config.logger.info('Subscribed to tag: ' + tagName);
                 deferred.resolve();
             }
         });
