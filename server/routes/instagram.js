@@ -10,6 +10,8 @@
     var lastUpdate = 0;
 
     router.get('/photo', function (req, res) {
+        config.logger.info('GET request for /photo. query["hub.challenge"] = ' + req.query['hub.challenge']);
+
         if (req.query['hub.verify_token'] == config.instagram.verify) {
             res.send(req.query['hub.challenge']);
         } else {
@@ -40,6 +42,8 @@
 
         if (update.time - lastUpdate < 1) return;
         lastUpdate = update.time;
+
+        config.logger.info('POST request for /photo. object updated: ' + update.object_id);
 
         var path = 'https://api.instagram.com/v1/tags/' + update.object_id + '/media/recent?client_id=' + config.instagram.client;
 
