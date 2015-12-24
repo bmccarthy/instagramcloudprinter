@@ -117,7 +117,7 @@
             client_secret: config.instagram.secret,
             verify_token: config.instagram.verify,
             object: 'tag', aspect: 'media', object_id: tagName,
-            callback_url: config.host + '/api/instagram/photo'
+            callback_url: config.host + ':' + config.port + '/api/instagram/photo'
         };
 
         request.post({url: 'https://api.instagram.com/v1/subscriptions', form: params}, function (err, response, body) {
