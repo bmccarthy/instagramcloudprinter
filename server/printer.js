@@ -32,6 +32,8 @@
 
         return saveImage(url, filepath)
             .then(function () {
+                config.logger.info('pre-submitting print request to google.');
+
                 var requestOptions = {
                     url: 'https://www.google.com/cloudprint/submit',
                     formData: {
@@ -56,6 +58,8 @@
     }
 
     function gcp(requestOptions) {
+        config.logger.info('attempting to print file');
+
         var deferred = q.defer();
 
         if (!requestOptions.method) {
