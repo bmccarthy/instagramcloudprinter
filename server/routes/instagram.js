@@ -10,8 +10,6 @@
     var lastUpdate = 0;
 
     router.get('/photo', function (req, res) {
-        config.logger.info('GET request for /photo. query["hub.challenge"] = ' + req.query['hub.challenge']);
-
         if (req.query['hub.verify_token'] == config.instagram.verify) {
             res.send(req.query['hub.challenge']);
         } else {
@@ -39,6 +37,10 @@
 
         var update = req.body[0];
         res.json({success: true, kind: update.object});
+
+        config.logger.info('instagram is updated');
+        config.logger.info(req.body);
+        return;
 
         if (update.time - lastUpdate < 1) return;
         lastUpdate = update.time;
@@ -74,6 +76,7 @@
                         config.logger.error(err);
                         throw err;
                     }
+                    // errors are those which already exist. they are not inserted again. todo: possibly use the last time stamp to not get those from the recent query
                     config.logger.info('Inserted records: ' + result.inserted + ', errors: ' + result.errors);
                 });
             })
