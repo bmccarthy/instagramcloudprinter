@@ -35,23 +35,26 @@
 
         config.logger.info('submitting print job: ' + filepath);
 
-        var requestOptions = {
-            url: 'https://www.google.com/cloudprint/submit',
-            formData: {
-                printerid: config.printerId,
-                ticket: '{ "version": "1.0", "print": {} }',
-                contentType: 'image/jpeg',
-                title: path.basename(filepath),
-                content: fs.createReadStream(filepath),
-                tag: config.printTag
-            }
-        };
-
         return saveImage(url, filepath)
             .then(function () {
+                config.logger.info('saved file, now send it through google cloud print.');
+
+                var requestOptions = {
+                    url: 'https://www.google.com/cloudprint/submit',
+                    formData: {
+                        printerid: config.printerId,
+                        ticket: '{ "version": "1.0", "print": {} }',
+                        contentType: 'image/jpeg',
+                        title: path.basename(filepath),
+                        content: fs.createReadStream(filepath),
+                        tag: config.printTag
+                    }
+                };
+
                 return gcp(requestOptions);
             })
             .finally(function () {
+                config.logger.info('deleting file now that it is done. ' + filepath);
                 fs.unlink(filepath);
             });
     }
