@@ -40,7 +40,6 @@
 
         config.logger.info('instagram is updated');
         config.logger.info(req.body);
-        return;
 
         if (update.time - lastUpdate < 1) return;
         lastUpdate = update.time;
