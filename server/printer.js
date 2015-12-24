@@ -14,11 +14,15 @@
     function saveImage(url, filepath) {
         var deferred = q.defer();
 
+        config.logger.info('Starting to save image: ' + url + '. filepath: ' + filepath);
+
         mkdirp(path.dirname(filepath), function (err) {
             if (err) {
                 config.logger.err(err);
                 return;
             }
+
+            config.logger.info('Created directory for pictures');
 
             var ws = fs.createWriteStream(filepath);
             ws.on('error', function (err) {
@@ -29,6 +33,7 @@
                 deferred.resolve();
             });
 
+            config.logger('Requesting url to write file: ' + url);
             request(url).pipe(ws);
         });
 
