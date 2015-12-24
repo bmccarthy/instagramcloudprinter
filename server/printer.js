@@ -9,35 +9,23 @@
     var path = require('path');
     var q = require('q');
     var request = require('request').defaults({json: true});
-    var mkdirp = require('mkdirp');
 
     function saveImage(url, filepath) {
         var deferred = q.defer();
 
         config.logger.info('Starting to save image: ' + url + '. filepath: ' + filepath);
-        config.logger.info('Starting to save image2');
 
-        mkdirp(path.dirname(filepath), function (err) {
-            if (err) {
-                config.logger.info('error while creating path');
-                config.logger.error(err);
-                return;
-            }
-
-            config.logger.info('Created directory for pictures');
-
-            var ws = fs.createWriteStream(filepath);
-            ws.on('error', function (err) {
-                config.logger.error(err);
-                deferred.reject(err);
-            });
-            ws.on('finish', function () {
-                deferred.resolve();
-            });
-
-            config.logger('Requesting url to write file: ' + url);
-            request(url).pipe(ws);
+        var ws = fs.createWriteStream(filepath);
+        ws.on('error', function (err) {
+            config.logger.error(err);
+            deferred.reject(err);
         });
+        ws.on('finish', function () {
+            deferred.resolve();
+        });
+
+        config.logger('Requesting url to write file: ' + url);
+        request(url).pipe(ws);
 
         return deferred.promise;
     }

@@ -9,7 +9,7 @@
     var r = require('rethinkdb');
     var q = require('q');
     var request = require('request').defaults({json: true});
-
+    var mkdirp = require('mkdirp');
     var printer = require('./printer');
     var config = require('./config');
 
@@ -40,12 +40,29 @@
             conn = c;
         })
         .then(setupDb)
+        .then(createPictureDirectory)
         .then(startListening)
         .then(deleteAllSubscriptions)
         .then(subscribeToStaticTag);
 
     function createDb() {
         return r.dbCreate(config.database.db).run(conn);
+    }
+
+    function createPictureDirectory() {
+        var deferred = q.defer();
+
+        mkdirp(config.printFolder, function (err) {
+            if (err) {
+                config.logger.info('error while creating path');
+                return q.reject(err);
+            }
+
+            config.logger.info('created pictures directory');
+            deferred.resolve({});
+        });
+
+        return deferred.promise;
     }
 
     function createPictures() {
