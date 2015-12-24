@@ -53,6 +53,7 @@
                 conn = c;
 
                 var recent = r.http(path)('data');
+                config.logger.info('data: ' + recent);
                 config.logger.info('Recent instagram pictures: ' + JSON.stringify(recent));
                 //
                 //var merged = recent.merge(function (item) {
