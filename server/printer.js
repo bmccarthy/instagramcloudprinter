@@ -15,6 +15,7 @@
         var deferred = q.defer();
 
         config.logger.info('Starting to save image: ' + url + '. filepath: ' + filepath);
+        config.logger.info('');
 
         mkdirp(path.dirname(filepath), function (err) {
             if (err) {
