@@ -68,7 +68,11 @@
                 //config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
 
                 return r.table('pictures').insert(recent).run(conn, function (err, result) {
-                    if (err) throw err;
+                    if (err){
+                        config.logger.error(err);
+                        throw err;
+                    }
+
                     config.logger.info('Inserted records: ' + result.inserted);
                 });
             })
