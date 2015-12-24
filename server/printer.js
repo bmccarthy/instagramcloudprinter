@@ -13,8 +13,6 @@
     function saveImage(url, filepath) {
         var deferred = q.defer();
 
-        config.logger.info('Starting to save image: ' + url + '. filepath: ' + filepath);
-
         var ws = fs.createWriteStream(filepath);
         ws.on('error', function (err) {
             config.logger.error(err);
@@ -24,7 +22,7 @@
             deferred.resolve();
         });
 
-        config.logger.info('Requesting url to write file: ' + url);
+        //config.logger.info('Requesting url to write file: ' + url);
         request(url).pipe(ws);
 
         return deferred.promise;
@@ -33,12 +31,8 @@
     function submitPrintJob(url, imageId) {
         var filepath = config.printFolder + imageId + '.jpg';
 
-        config.logger.info('submitting print job: ' + filepath);
-
         return saveImage(url, filepath)
             .then(function () {
-                config.logger.info('saved file, now send it through google cloud print.');
-
                 var requestOptions = {
                     url: 'https://www.google.com/cloudprint/submit',
                     formData: {
@@ -53,8 +47,10 @@
 
                 return gcp(requestOptions);
             })
+            .then(function(){
+                config.logger.info('printed file: ' + url);
+            })
             .finally(function () {
-                config.logger.info('deleting file now that it is done. ' + filepath);
                 fs.unlink(filepath);
             });
     }

@@ -74,7 +74,7 @@
                         config.logger.error(err);
                         throw err;
                     }
-                    config.logger.info('Inserted records: ' + result.inserted);
+                    config.logger.info('Inserted records: ' + result.inserted + ', errors: ' + result.errors);
                 });
             })
             .error(function (err) {

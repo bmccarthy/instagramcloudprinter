@@ -13,56 +13,28 @@
     var printer = require('./printer');
     var config = require('./config');
 
+    var conn;
+    var numPrinted = 0;
+
     var app = express();
 
     app.set('port', config.port);
     app.use(bodyParser.urlencoded({extended: true}));
 
-    //app.use(express.static(path.join(__dirname, '../app')));
-
-    //app.get('/', function (req, res) {
-    //    res.sendFile(path.join(__dirname, '../app/index.html'));
-    //});
-
-    //app.use('/api/google', require('./routes/google'));
-
     app.use('/api/instagram', require('./routes/instagram'));
-
-    //// redirect all others to the index (HTML5 history)
-    //app.get('*', function (req, res) {
-    //    res.sendFile(path.join(__dirname, '../app/index.html'));
-    //});
 
     function createDb() {
         return r.dbCreate(config.database.db).run(conn);
     }
 
-    function createPictureDirectory() {
-        var deferred = q.defer();
-
-        config.logger.info('starting to create print folder: ' + config.printFolder);
-
-        mkdirp(config.printFolder, function (err) {
-            if (err) {
-                config.logger.info('error while creating path');
-                return q.reject(err);
-            }
-
-            config.logger.info('created pictures directory');
-            deferred.resolve({});
-        });
-
-        return deferred.promise;
-    }
-
     function createPictures() {
-        return r.tableCreate('pictures').run(conn)
-            .then(function () {
-                return q.all([
-                    r.table('pictures').indexCreate('time').run(conn),
-                    r.table('pictures').indexCreate('place', {geo: true}).run(conn)
-                ]);
-            });
+        return r.tableCreate('pictures').run(conn);
+        //.then(function () {
+        //    return q.all([
+        //        r.table('pictures').indexCreate('time').run(conn),
+        //        r.table('pictures').indexCreate('place', {geo: true}).run(conn)
+        //    ]);
+        //});
     }
 
     function setupDb() {
@@ -75,6 +47,22 @@
             });
     }
 
+    function createPictureDirectory() {
+        var deferred = q.defer();
+
+        mkdirp(config.printFolder, function (err) {
+            if (err) {
+                config.logger.info('error while creating path');
+                return q.reject(err);
+            }
+
+            config.logger.info('picture directory now exists: ' + config.printFolder);
+            deferred.resolve({});
+        });
+
+        return deferred.promise;
+    }
+
     function startListening() {
         return r.table('pictures')
             .changes()
@@ -85,7 +73,10 @@
                 cursor.each(function (err, row) {
                     if (err) throw err;
 
-                    handleNewInstagram(row.new_val);
+                    if (numPrinted < 33) {
+                        numPrinted = numPrinted + 1;
+                        handleNewInstagram(row.new_val);
+                    }
                 });
             });
     }
@@ -147,20 +138,18 @@
         return deferred.promise;
     }
 
-    var conn;
-
-    r.connect(config.database)
-        .then(function (c) {
-            conn = c;
-        })
-        .then(setupDb)
-        .then(createPictureDirectory)
-        .then(startListening)
-        .then(deleteAllSubscriptions)
-        .then(subscribeToStaticTag);
-
     app.listen(app.get('port'), function () {
         console.log('Express server listening on port ' + app.get('port'));
         config.logger.info('Express server listening on port ' + app.get('port'));
+
+        r.connect(config.database)
+            .then(function (c) {
+                conn = c;
+            })
+            .then(setupDb)
+            .then(createPictureDirectory)
+            .then(startListening)
+            .then(deleteAllSubscriptions)
+            .then(subscribeToStaticTag);
     });
 })();
