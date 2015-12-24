@@ -33,6 +33,8 @@
     function submitPrintJob(url, imageId) {
         var filepath = config.printFolder + imageId + '.jpg';
 
+        config.logger.info('submitting print job: ' + filepath);
+
         var requestOptions = {
             url: 'https://www.google.com/cloudprint/submit',
             formData: {

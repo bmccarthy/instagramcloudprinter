@@ -33,24 +33,14 @@
     //    res.sendFile(path.join(__dirname, '../app/index.html'));
     //});
 
-    var conn;
-
-    r.connect(config.database)
-        .then(function (c) {
-            conn = c;
-        })
-        .then(setupDb)
-        .then(createPictureDirectory)
-        .then(startListening)
-        .then(deleteAllSubscriptions)
-        .then(subscribeToStaticTag);
-
     function createDb() {
         return r.dbCreate(config.database.db).run(conn);
     }
 
     function createPictureDirectory() {
         var deferred = q.defer();
+
+        config.logger.info('starting to create print folder: ' + config.printFolder);
 
         mkdirp(config.printFolder, function (err) {
             if (err) {
@@ -156,6 +146,18 @@
 
         return deferred.promise;
     }
+
+    var conn;
+
+    r.connect(config.database)
+        .then(function (c) {
+            conn = c;
+        })
+        .then(setupDb)
+        .then(createPictureDirectory)
+        .then(startListening)
+        .then(deleteAllSubscriptions)
+        .then(subscribeToStaticTag);
 
     app.listen(app.get('port'), function () {
         console.log('Express server listening on port ' + app.get('port'));
