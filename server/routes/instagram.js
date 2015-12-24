@@ -45,8 +45,6 @@
 
         config.logger.info('POST request for /photo. object updated: ' + update.object_id);
 
-        var path = 'https://api.instagram.com/v1/tags/' + update.object_id + '/media/recent?client_id=' + config.instagram.client;
-
         var conn;
         r.connect(config.database)
             .then(function (c) {
@@ -68,6 +66,8 @@
                 //
                 //config.logger.info('Merged instagram pictures: ' + JSON.stringify(merged));
 
+                var path = 'https://api.instagram.com/v1/tags/' + update.object_id + '/media/recent?client_id=' + config.instagram.client;
+
                 return r.table('pictures').insert(r.http(path)('data')).run(conn, function (err, result) {
                     if (err) {
                         config.logger.error('Error while inserting pictures.');
@@ -75,8 +75,12 @@
                         throw err;
                     }
 
+                    config.logger.info('Sucess inserting..');
                     config.logger.info('Inserted records: ' + result.inserted);
                 });
+            })
+            .then(function () {
+                config.logger.info('Inserted records');
             })
             .error(function (err) {
                 config.logger.error(err);
