@@ -24,7 +24,7 @@
             deferred.resolve();
         });
 
-        config.logger('Requesting url to write file: ' + url);
+        config.logger.info('Requesting url to write file: ' + url);
         request(url).pipe(ws);
 
         return deferred.promise;
