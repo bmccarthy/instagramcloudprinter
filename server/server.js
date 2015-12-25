@@ -12,6 +12,7 @@
     var mkdirp = require('mkdirp');
     var printer = require('./printer');
     var config = require('./config');
+    var ig = require('./instagram-helper');
 
     var myqueue = require('./MyQueue');
 
@@ -141,20 +142,6 @@
         return deferred.promise;
     }
 
-    function getRecentPictures() {
-        var path = 'https://api.instagram.com/v1/tags/' + update.object_id + '/media/recent?client_id=' + config.instagram.client;
-
-        return r.table('pictures').insert(r.http(path)('data')).run(conn, function (err) {
-            if (err) {
-                config.logger.error('Error while inserting pictures.');
-                config.logger.error(err);
-                return;
-            }
-
-            config.logger.info('init database with most recent pictures.');
-        });
-    }
-
     app.listen(app.get('port'), function () {
         console.log('Express server listening on port ' + app.get('port'));
         config.logger.info('Express server listening on port ' + app.get('port'));
@@ -167,7 +154,11 @@
             .then(createPictureDirectory)
             .then(startListening)
             .then(deleteAllSubscriptions)
-            .then(getRecentPictures)
+            .then(function () {
+                return ig.getRecent(config.tag).then(function (recent) {
+                    r.table('pictures').insert(recent).run(conn);
+                });
+            })
             .then(subscribeToStaticTag);
     });
 })();

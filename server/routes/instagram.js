@@ -5,6 +5,7 @@
     var bodyParser = require('body-parser');
     var r = require('rethinkdb');
     var config = require('../config');
+    var ig = require('../instagram-helper');
     var router = require('express').Router();
 
     router.get('/photo', function (req, res) {
@@ -36,29 +37,18 @@
         var update = req.body[0];
         res.json({success: true, kind: update.object});
 
-        var conn;
-        r.connect(config.database)
-            .then(function (c) {
-                conn = c;
+        ig.getRecent(update.object_id)
+            .then(function (recent) {
 
-                var path = 'https://api.instagram.com/v1/tags/' + update.object_id + '/media/recent?client_id=' + config.instagram.client;
-
-                return r.table('pictures').insert(r.http(path)('data')).run(conn, function (err, result) {
-                    if (err) {
-                        config.logger.error('Error while inserting pictures.');
-                        config.logger.error(err);
-                        throw err;
-                    }
-
-                    // errors are those which already exist. they are not inserted again. todo: possibly use the last time stamp to not get those from the recent query
-                    // config.logger.info('Inserted records: ' + result.inserted + ', errors: ' + result.errors);
-                });
-            })
-            .error(function (err) {
-                config.logger.error(err);
-            })
-            .finally(function () {
-                if (conn) conn.close();
+                var conn;
+                r.connect(config.database)
+                    .then(function (c) {
+                        conn = c;
+                        r.table('pictures').insert(recent).run(conn);
+                    })
+                    .finally(function () {
+                        if (conn) conn.close();
+                    });
             });
     });
 
