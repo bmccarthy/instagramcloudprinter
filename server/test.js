@@ -25,7 +25,7 @@
     }
 
     module.exports = {
-        enqeue: enqueue
+        enqueue: enqueue
     };
 
 })();
