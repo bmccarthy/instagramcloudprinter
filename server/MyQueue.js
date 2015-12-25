@@ -1,4 +1,5 @@
 (function () {
+    'use strict';
 
     var myqueue = [];
     var isProcessing = false;
@@ -9,7 +10,7 @@
         if (myqueue.length) {
             isProcessing = true;
 
-            item = myqueue.shift();
+            var item = myqueue.shift();
 
             item().finally(function () {
                 isProcessing = false;

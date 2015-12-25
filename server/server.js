@@ -84,66 +84,13 @@
             });
     }
 
-    function subscribeToStaticTag() {
-        return subscribeToTag(config.tag);
-    }
-
-    function deleteAllSubscriptions() {
-        var deferred = q.defer();
-
-        var url = 'https://api.instagram.com/v1/subscriptions?client_secret=' + config.instagram.secret + '&object=all&client_id=' + config.instagram.client;
-
-        request.del(url, function (err) {
-            if (err) return q.reject(err);
-
-            config.logger.info('Successfully unsubscribed to all instagram tags.');
-
-            deferred.resolve({});
-        });
-
-        return deferred.promise;
-    }
-
     function handleNewInstagram(image) {
         return function () {
             return printer.submitPrintJob(image.images.standard_resolution.url, image.id);
         };
     }
 
-    function subscribeToTag(tagName) {
-        if (tagName == null || tagName === '') return q.when();
-
-        var deferred = q.defer();
-
-        var params = {
-            client_id: config.instagram.client,
-            client_secret: config.instagram.secret,
-            verify_token: config.instagram.verify,
-            object: 'tag', aspect: 'media', object_id: tagName,
-            callback_url: config.host + ':' + config.port + '/api/instagram/photo'
-        };
-
-        request.post({url: 'https://api.instagram.com/v1/subscriptions', form: params}, function (err, response, body) {
-            if (err) {
-                config.logger.error(err);
-                deferred.reject(err);
-                return;
-            }
-
-            if (response.statusCode < 200 || response.statusCode >= 400) {
-                config.logger.error('Error subscribing to tag: ' + JSON.stringify(body) + ', params:' + JSON.stringify(params));
-                deferred.reject(body);
-            } else {
-                config.logger.info('Subscribed to tag. params: ' + JSON.stringify(params));
-                deferred.resolve();
-            }
-        });
-
-        return deferred.promise;
-    }
-
     app.listen(app.get('port'), function () {
-        console.log('Express server listening on port ' + app.get('port'));
         config.logger.info('Express server listening on port ' + app.get('port'));
 
         r.connect(config.database)
@@ -153,12 +100,14 @@
             .then(setupDb)
             .then(createPictureDirectory)
             .then(startListening)
-            .then(deleteAllSubscriptions)
+            .then(ig.deleteAllSubscriptions)
             .then(function () {
                 return ig.getRecent(config.tag).then(function (recent) {
                     r.table('pictures').insert(recent).run(conn);
                 });
             })
-            .then(subscribeToStaticTag);
+            .then(function () {
+                return ig.subscribeToTag(config.tag);
+            });
     });
 })();
