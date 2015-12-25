@@ -60,7 +60,7 @@
 
     function refreshTokenIfNeeded() {
         // if the access token looks good (has a value and is not expired yet, fullfil promise
-        if (!myTokens.access_token) return q.when({});
+        if (myTokens.access_token) return q.when({});
 
         var deferred = q.defer();
 
