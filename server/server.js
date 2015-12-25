@@ -13,6 +13,8 @@
     var printer = require('./printer');
     var config = require('./config');
 
+    var myqueue = require('./test');
+
     var conn;
     var numPrinted = 0;
 
@@ -75,7 +77,7 @@
 
                     if (numPrinted < 33) {
                         numPrinted = numPrinted + 1;
-                        handleNewInstagram(row.new_val);
+                        myqueue.enqueue(handleNewInstagram(row.new_val));
                     }
                 });
             });
@@ -102,7 +104,9 @@
     }
 
     function handleNewInstagram(image) {
-        return printer.submitPrintJob(image.images.standard_resolution.url, image.id);
+        return function () {
+            return printer.submitPrintJob(image.images.standard_resolution.url, image.id);
+        };
     }
 
     function subscribeToTag(tagName) {
