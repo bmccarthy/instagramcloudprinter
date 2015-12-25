@@ -19,7 +19,7 @@
     });
 
     module.exports = {
-        tag: 'catsofinstagram',
+        tag: process.env.TAG || 'catsofinstagram',
         port: process.env.PORT || 8000,
         host: process.env.HOST,
         printFolder: __dirname + '/pictures/', // directory to place the pictures while they are being printed.
