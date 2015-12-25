@@ -74,8 +74,7 @@
             myTokens = tokens;
             oauth2Client.setCredentials(myTokens);
 
-            console.log('getting new tokens, they are now: ' + JSON.stringify(myTokens));
-
+            config.logger.info('refreshed tokens.  They are now: ' + JSON.stringify(myTokens));
             deferred.resolve(tokens);
         });
 
@@ -148,6 +147,6 @@
 
     module.exports = {
         submitPrintJob: submitPrintJob,
-        gcp: gcp
+        gcp: callGoogle
     };
 })();

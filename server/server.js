@@ -13,7 +13,7 @@
     var printer = require('./printer');
     var config = require('./config');
 
-    var myqueue = require('./test');
+    var myqueue = require('./MyQueue');
 
     var conn;
     var numPrinted = 0;
@@ -30,13 +30,13 @@
     }
 
     function createPictures() {
-        return r.tableCreate('pictures').run(conn);
-        //.then(function () {
-        //    return q.all([
-        //        r.table('pictures').indexCreate('time').run(conn),
-        //        r.table('pictures').indexCreate('place', {geo: true}).run(conn)
-        //    ]);
-        //});
+        return r.tableCreate('pictures').run(conn)
+            .then(function () {
+                return q.all([
+                    r.table('pictures').indexCreate('time').run(conn),
+                    r.table('pictures').indexCreate('place', {geo: true}).run(conn)
+                ]);
+            });
     }
 
     function setupDb() {
@@ -75,7 +75,7 @@
                 cursor.each(function (err, row) {
                     if (err) throw err;
 
-                    if (numPrinted < 33) {
+                    if (numPrinted < 8) {
                         numPrinted = numPrinted + 1;
                         myqueue.enqueue(handleNewInstagram(row.new_val));
                     }
@@ -126,13 +126,12 @@
             if (err) {
                 config.logger.error(err);
                 deferred.reject(err);
-                return q.reject(err);
+                return;
             }
 
             if (response.statusCode < 200 || response.statusCode >= 400) {
                 config.logger.error('Error subscribing to tag: ' + JSON.stringify(body) + ', params:' + JSON.stringify(params));
-                deferred.reject();
-                return q.reject(body);
+                deferred.reject(body);
             } else {
                 config.logger.info('Subscribed to tag. params: ' + JSON.stringify(params));
                 deferred.resolve();
