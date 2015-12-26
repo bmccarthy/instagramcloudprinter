@@ -137,7 +137,7 @@
 
         getPrintJobs()
             .then(function (jobs) {
-                config.logger.info(jobs);
+                config.logger.info('got all print jobs');
 
                 for (var i = 0; i < jobs.length; i++) {
                     promises.push(deletePrintJob(jobs[i].id));
