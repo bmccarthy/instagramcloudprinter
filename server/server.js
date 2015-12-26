@@ -102,13 +102,13 @@
             })
             .then(setupDb)
             .then(createPictureDirectory)
-            .then(startListening)
             .then(ig.deleteAllSubscriptions)
             .then(function () {
                 return ig.getRecent(config.tag).then(function (recent) {
                     r.table('pictures').insert(recent).run(conn);
                 });
             })
+            .then(startListening)
             .then(function () {
                 return ig.subscribeToTag(config.tag);
             });
