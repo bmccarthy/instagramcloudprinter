@@ -71,6 +71,7 @@
             .changes()
             .filter(r.row('old_val').eq(null))
             .run(conn, function (err, cursor) {
+                throw 'error while listening for changes...';
                 if (err) throw err;
 
                 cursor.each(function (err, row) {
