@@ -16,7 +16,7 @@
     "dotenv": "^0.5.1",
     "express": "^4.11.0",
     "gm": "^1.21.1",
-    "googleapis": "^2.0.3",
+    "googleapis": "^2.1.7",
     "jsonwebtoken": "^5.0.1",
     "lodash": "^2.4.1",
     "mkdirp": "^0.5.1",

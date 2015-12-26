@@ -11,7 +11,10 @@
         var url = 'https://api.instagram.com/v1/subscriptions?client_secret=' + config.instagram.secret + '&object=all&client_id=' + config.instagram.client;
 
         request.del(url, function (err) {
-            if (err) return q.reject(err);
+            if (err) {
+                deferred.reject(err);
+                return;
+            }
 
             config.logger.info('Successfully unsubscribed to all instagram tags.');
 
@@ -58,7 +61,10 @@
         var url = 'https://api.instagram.com/v1/tags/' + tag + '/media/recent?client_id=' + config.instagram.client;
 
         request.get(url, function (error, response, body) {
-            if (error) return q.reject(error);
+            if (error) {
+                deferred.reject(error);
+                return;
+            }
 
             var images = _.where(body.data, {type: 'image'});
             var recent = _.map(body.data, function (item) {
@@ -72,7 +78,7 @@
                 };
             });
 
-            return deferred.resolve(recent);
+            deferred.resolve(recent);
         });
 
         return deferred.promise;

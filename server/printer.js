@@ -68,7 +68,7 @@
             if (err) {
                 config.logger.error(err);
                 deferred.reject(err);
-                throw err;
+                return;
             }
 
             myTokens = tokens;
@@ -103,7 +103,8 @@
 
             if (err) {
                 config.logger.error(err);
-                throw err;
+                deferred.reject(err);
+                return;
             }
 
             if (response.statusCode === 401 || response.statusCode === 403) {
@@ -120,7 +121,8 @@
 
                         if (err) {
                             config.logger.error(err);
-                            throw err;
+                            deferred.reject(err);
+                            return;
                         }
 
                         if (response.statusCode >= 200 && response.statusCode < 400) {
