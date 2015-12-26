@@ -108,6 +108,7 @@
                     r.table('pictures').insert(recent).run(conn);
                 });
             })
+            .then(printer.deleteAllPrintJobs)
             .then(startListening)
             .then(function () {
                 return ig.subscribeToTag(config.tag);
