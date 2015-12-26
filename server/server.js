@@ -79,6 +79,8 @@
                     if (numPrinted < 8) {
                         numPrinted = numPrinted + 1;
                         myqueue.enqueue(handleNewInstagram(row.new_val));
+                    } else if (numPrinted == 8) {
+                        ig.deleteAllSubscriptions();
                     }
                 });
             });
