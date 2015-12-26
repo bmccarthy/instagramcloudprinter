@@ -67,18 +67,13 @@
     }
 
     function startListening() {
-        return r.table('pictures')
+        r.table('pictures')
             .changes()
             .filter(r.row('old_val').eq(null))
             .run(conn, function (err, cursor) {
-                config.logger.info('inside listening for changes...');
-
-                return q.reject('rejecting for - error listening for changes...');
-                throw 'error while listening for changes...';
                 if (err) throw err;
 
                 cursor.each(function (err, row) {
-                    throw 'Error during cursor each...';
                     if (err) throw err;
 
                     numPrinted = numPrinted + 1;
