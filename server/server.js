@@ -74,6 +74,7 @@
                 if (err) throw err;
 
                 cursor.each(function (err, row) {
+                    throw 'Error during cursor each...';
                     if (err) throw err;
 
                     numPrinted = numPrinted + 1;
@@ -111,6 +112,10 @@
             .then(startListening)
             .then(function () {
                 return ig.subscribeToTag(config.tag);
+            })
+            .catch(function(err){
+                config.logger.error('error setting up server');
+                config.logger.error(err);
             });
     });
 })();
